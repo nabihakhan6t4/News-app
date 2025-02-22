@@ -59,10 +59,18 @@ const Entertainment = ({ category }) => {
                 <h2 className="card-title text-lg">
                   {article.title || "No Title Available"}
                 </h2>
-                <p className="text-sm">{article.description || "No description available"}</p>
+                <p className="text-sm">
+                  {article.description || "No description available"}
+                </p>
                 <div className="card-actions">
-                  <a href={article.url} target="_blank" rel="noopener noreferrer">
-                    <button className="btn btn-primary text-sm px-4 py-2">Read More</button>
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <button className="btn btn-primary text-sm px-4 py-2">
+                      Read More
+                    </button>
                   </a>
                 </div>
               </div>
@@ -72,7 +80,7 @@ const Entertainment = ({ category }) => {
       ) : (
         !loading && !error && <h1 className="text-center">No news available</h1>
       )}
-      
+
       {/* Pagination Controls */}
       <div className="flex justify-center mt-6">
         <button

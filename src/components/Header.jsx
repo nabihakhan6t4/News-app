@@ -34,13 +34,10 @@ export default function Example() {
         </div>
         <PopoverGroup className="hidden lg:flex lg:gap-x-12">
           <Link
-            to="/politics"
+            to="/business"
             className="text-sm/6 font-semibold text-[#333333]"
           >
-            Politics
-          </Link>
-          <Link to="/sports" className="text-sm/6 font-semibold text-[#333333]">
-            Sports
+            Business
           </Link>
           <Link
             to="/entertainment"
@@ -48,6 +45,20 @@ export default function Example() {
           >
             Entertainment
           </Link>
+         
+          <Link to="/health" className="text-sm/6 font-semibold text-[#333333]">
+            Health
+          </Link>
+          <Link
+            to="/science"
+            className="text-sm/6 font-semibold text-[#333333]"
+          >
+            Science
+          </Link>
+          <Link to="/sports" className="text-sm/6 font-semibold text-[#333333]">
+            Sports
+          </Link>
+
           <Link
             to="/technology"
             className="text-sm/6 font-semibold text-[#333333]"
@@ -86,16 +97,10 @@ export default function Example() {
             <div className="-my-6 divide-y divide-[#1A1A1A]/10">
               <div className="space-y-2 py-6">
                 <Link
-                  to="/politics"
+                  to="/business"
                   className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-[#333333] hover:bg-[#F5F5F5]"
                 >
-                  Politics
-                </Link>
-                <Link
-                  to="/sports"
-                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-[#333333] hover:bg-[#F5F5F5]"
-                >
-                  Sports
+                  Business
                 </Link>
                 <Link
                   to="/entertainment"
@@ -103,6 +108,27 @@ export default function Example() {
                 >
                   Entertainment
                 </Link>
+
+               
+                <Link
+                  to="/health"
+                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-[#333333] hover:bg-[#F5F5F5]"
+                >
+                  Health
+                </Link>
+                <Link
+                  to="/science"
+                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-[#333333] hover:bg-[#F5F5F5]"
+                >
+                  Science
+                </Link>
+                <Link
+                  to="/sports"
+                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-[#333333] hover:bg-[#F5F5F5]"
+                >
+                  Sports
+                </Link>
+
                 <Link
                   to="/technology"
                   className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-[#333333] hover:bg-[#F5F5F5]"
