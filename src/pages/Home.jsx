@@ -1,31 +1,37 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import PropTypes from 'prop-types';
 
-const Home = () => {
+const Home = ({apiKey , setProgress}) => {
   const [articles, setArticles] = useState([]); 
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
+      setProgress(10);
       try {
         const response = await fetch(
-          "https://newsapi.org/v2/top-headlines?country=us&apiKey=e317ec98b04b453da8f2176af582914e"
+          `https://newsapi.org/v2/top-headlines?country=us&apiKey=${apiKey}`
         );
         const data = await response.json();
-        setArticles(data.articles.slice(0, 3)); 
+        setProgress(50);
+        setArticles(data.articles.slice(0, 3));
+        setProgress(100); // ✅ Now setting progress at the right place
       } catch (error) {
         console.error("Error fetching news:", error);
       }
     };
-    
-    fetchData(); // Fetch data on mount
-
+  
+    document.title = "Home - NewsHub";
+    fetchData();
+  
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % 3);
     }, 3000);
-    
-    return () => clearInterval(interval);
-  }, []);
+  
+    return () => clearInterval(interval); 
+  }, [apiKey, setProgress]); 
+  
 
   const handleReadMore = () => {
     window.open("https://www.bbc.com/news", "_blank");
@@ -54,7 +60,7 @@ const Home = () => {
             backgroundPosition: "center",
           }}
         >
-          <div className="hero-content text-white">
+          <div className="hero-content ">
             <div>
               <motion.h1
                 className="text-3xl md:text-4xl font-bold"
@@ -68,6 +74,7 @@ const Home = () => {
               >
                 Trending News
               </motion.h1>
+             
               <motion.p
                 className="py-2 md:py-4 text-base md:text-lg"
                 initial={{ opacity: 0 }}
@@ -119,7 +126,9 @@ const Home = () => {
               transition={{ duration: 0.5 }}
               whileHover={{ scale: 1.1, rotate: 5 }}
             >
+               <img src={article.urlToImage}/>
               <h3 className="font-bold text-lg">{article.title}</h3>
+
               <p>{article.description}</p>
               <button
                 className="btn btn-primary mt-2"
@@ -182,3 +191,7 @@ const Home = () => {
 };
 
 export default Home;
+Home.propTypes = {
+  setProgress: PropTypes.func.isRequired,
+  apiKey: PropTypes.string.isRequired,
+};

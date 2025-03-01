@@ -1,98 +1,152 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Loader from "../components/Loader";
+import InfiniteScroll from "react-infinite-scroll-component";
+import PropTypes from "prop-types";
 
-const Entertainment = ({ category }) => {
+const Health = ({ category, setProgress, apiKey }) => {
   const [result, setResult] = useState({ articles: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(6);
+  const [pageSize] = useState(6);
   const [totalResults, setTotalResults] = useState(0);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
+  const capitalizeFirstLetter = (val) =>
+    val.charAt(0).toUpperCase() + val.slice(1);
 
-      try {
-        const url = `https://newsapi.org/v2/everything?q=${category}&page=${page}&pageSize=${pageSize}&apiKey=e317ec98b04b453da8f2176af582914e`;
+  const fetchMoreData = () => {
+    setPage((prevPage) => prevPage + 1);
+  };
 
-        const response = await fetch(url);
+  // Memoize fetchData to prevent unnecessary re-renders
+  const fetchData = useCallback(async () => {
+    setProgress(10);
+    setLoading(true);
+    setError(null);
 
-        if (!response.ok) {
-          throw new Error(`HTTP Error! Status: ${response.status}`);
-        }
+    try {
+      const url = `https://newsapi.org/v2/everything?q=${category}&page=${page}&pageSize=${pageSize}&apiKey=${apiKey}`;
+      const response = await fetch(url);
+      setProgress(30);
 
-        const result = await response.json();
-        setResult(result);
-        setTotalResults(result.totalResults);
-      } catch (error) {
-        setError("Failed to fetch news. Please try again later.");
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error(`HTTP Error! Status: ${response.status}`);
       }
-    };
 
+      const data = await response.json();
+      setProgress(70);
+
+      setResult((prevResult) => ({
+        articles: page === 1 ? data.articles : [...prevResult.articles, ...data.articles],
+      }));
+
+      setTotalResults(data.totalResults);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to fetch news. Please try again later.");
+    } finally {
+      setLoading(false);
+      setProgress(100);
+    }
+  }, [category, page, pageSize, apiKey, setProgress]); // Add missing dependencies
+
+  useEffect(() => {
     fetchData();
-  }, [category, page]); // ✅ Auto-fetch news jab category ya page change ho
+  }, [fetchData]); // Now fetchData is stable, so no infinite loop
 
+  document.title = `${capitalizeFirstLetter(category)} - NewsHub`;
+
+  const adjustTextLength = (text, maxLength) => {
+    if (!text) return "No description available.";
+    const words = text.split(" ");
+    return words.length > maxLength ? words.slice(0, maxLength).join(" ") + "..." : text;
+  };
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold text-center mb-4">
-        Latest {category} News
+    <div className="container mx-auto p-6">
+      <h1 className="text-2xl font-bold text-center mb-6">
+        Latest {capitalizeFirstLetter(category)} News
       </h1>
 
-      {loading && <h2 className="text-center">Loading...</h2>}
-      {error && <p className="text-center text-red-500">{error}</p>}
+      {loading && page === 1 && (
+        <div className="flex justify-center items-center h-32">
+          <Loader />
+        </div>
+      )}
+      {error && <p className="text-center text-4xl text-red-500">{error}</p>}
 
       {result.articles.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 justify-center">
-          {result.articles.map((article, index) => (
-            <div key={index} className="card bg-base-100 w-80 shadow-xl">
-              <figure className="px-6 pt-6">
-                <img
-                  src={article.urlToImage || "https://via.placeholder.com/300"}
-                  alt={article.title || "No Image Available"}
-                  className="rounded-xl"
-                />
-              </figure>
-              <div className="card-body items-center text-center">
-                <h2 className="card-title text-lg">
-                  {article.title || "No Title Available"}
-                </h2>
-                <p className="text-sm">{article.description || "No description available"}</p>
-                <div className="card-actions">
-                  <a href={article.url} target="_blank" rel="noopener noreferrer">
-                    <button className="btn btn-primary text-sm px-4 py-2">Read More</button>
+        <InfiniteScroll
+          dataLength={result.articles.length}
+          next={fetchMoreData}
+          hasMore={result.articles.length < totalResults}
+          loader={<Loader />}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {result.articles.map((article, index) => (
+              <div
+                key={index}
+                className="max-w-sm w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-hidden p-6"
+              >
+                <div
+                  className="h-48 bg-cover bg-center rounded-t-lg"
+                  style={{
+                    backgroundImage: `url(${
+                      article.urlToImage?.startsWith("http")
+                        ? article.urlToImage
+                        : "https://via.placeholder.com/300"
+                    })`,
+                  }}
+                ></div>
+                <div className="p-4">
+                  <h2 className="text-gray-900 font-bold text-xl mb-2">
+                    {adjustTextLength(article.title, 10)}
+                  </h2>
+                  <p className="text-gray-700 text-sm mb-4">
+                    {adjustTextLength(article.description, 20)}
+                  </p>
+                  <div className="flex items-center mt-4">
+                    <img
+                      className="w-10 h-10 rounded-full mr-4"
+                      src={
+                        article.urlToImage?.startsWith("http")
+                          ? article.urlToImage
+                          : "https://via.placeholder.com/50"
+                      }
+                      alt="Author"
+                    />
+                    <div className="text-sm">
+                      <p className="text-gray-900 font-semibold">
+                        {article.author || "Unknown"}
+                      </p>
+                      <p className="text-gray-600">
+                        {new Date(article.publishedAt).toDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block mt-4 text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+                  >
+                    Read More
                   </a>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </InfiniteScroll>
       ) : (
-        !loading && !error && <h1 className="text-center">No news available</h1>
+        !loading &&
+        !error && <h1 className="text-center text-gray-700">No news available</h1>
       )}
-      
-      {/* Pagination Controls */}
-      <div className="flex justify-center mt-6">
-        <button
-          className="btn btn-secondary mx-2"
-          disabled={page <= 1}
-          onClick={() => setPage(page - 1)}
-        >
-          Previous
-        </button>
-        <span className="text-xl font-bold mx-4">Page {page}</span>
-        <button
-          className="btn btn-secondary mx-2"
-          disabled={page * pageSize >= totalResults}
-          onClick={() => setPage(page + 1)}
-        >
-          Next
-        </button>
-      </div>
     </div>
   );
 };
 
-export default Entertainment;
+export default Health;
+Health.propTypes = {
+  category: PropTypes.string.isRequired,
+  setProgress: PropTypes.func.isRequired,
+  apiKey: PropTypes.string.isRequired,
+};
